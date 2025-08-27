@@ -18,6 +18,6 @@ public class PlayerInput : MonoBehaviour
         Rotate = Input.GetAxis(AxisHorizontal);
 
         Fire = Input.GetButton(FireButton);
-        Reload = Input.GetButton(ReloadButton);
+        Reload = Input.GetButtonDown(ReloadButton);
     }
 }
