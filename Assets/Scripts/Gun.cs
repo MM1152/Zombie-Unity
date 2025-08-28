@@ -33,6 +33,8 @@ public class Gun : MonoBehaviour
 
     public GunData gunData;
 
+    public UIManager uiManager;
+
     public ParticleSystem muzzleEffect;
     public ParticleSystem shellEffect;
     
@@ -55,6 +57,7 @@ public class Gun : MonoBehaviour
         lastFireTime = 0f;
 
         CurrentState = State.Ready;
+        uiManager.SetAmmoText(magAmmo, ammoRemain);
     }
 
     private void Awake()
@@ -144,12 +147,13 @@ public class Gun : MonoBehaviour
         }
 
         --magAmmo;
-        StartCoroutine(CoShotEffect(hit.point));
+        uiManager.SetAmmoText(magAmmo, ammoRemain);
+        StartCoroutine(CoShotEffect(hitPosition));
     }
 
     public bool Reload()
     {
-        if (ammoRemain <= 0 || currentState != State.Reloading) return false;
+        if (ammoRemain <= 0 || currentState == State.Reloading) return false;
 
         audioSource.PlayOneShot(gunData.reloadClip);
         currentState = State.Reloading;
@@ -174,11 +178,13 @@ public class Gun : MonoBehaviour
             magAmmo = ammoRemain;
             ammoRemain = 0;
         }
+        uiManager.SetAmmoText(magAmmo, ammoRemain);
     }
 
     public void IncreaseAmmo(int amount)
     {
         ammoRemain = Mathf.Min(ammoRemain + amount, gunData.startAmmoRemain);
         audioSource.PlayOneShot(itemPickUpClip);
+        uiManager.SetAmmoText(magAmmo, ammoRemain);
     }
 }

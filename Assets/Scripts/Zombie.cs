@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -51,18 +52,41 @@ public class Zombie : LivingEntity
     public float damage = 10f;
     public float lastAttackTime;
     public float attackInterval = 0.5f;
-    
-    public Transform target;
+
+    public ParticleSystem bloodParticle;
+    public AudioClip hitClip;
+    public AudioClip dieClip;
+
+    private Transform target;
     private AudioSource audioSource;
     private NavMeshAgent navMeshAgent;
     private Animator animator;
+    private CapsuleCollider collider;
+
+    public Renderer zombieRenderer;
 
     private void Awake()
     {
         audioSource = GetComponent<AudioSource>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+        collider = GetComponent<CapsuleCollider>();
     }
+    
+    public void SetUp(ZombieData data)
+    {
+        MaxHealth = data.maxHp;
+        damage = data.damage;
+        navMeshAgent.speed = data.speed;
+
+        zombieRenderer.material.color = data.skin; // 여기서 material 값은 복사되서 사용되는 친구임.
+    }
+
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        collider.enabled = true;
+    } 
 
     private void Update()
     {
@@ -143,21 +167,38 @@ public class Zombie : LivingEntity
         {
             CurrentStatus = Status.Trace;
         }
-    }
 
-    protected override void OnEnable()
-    {
-        base.OnEnable();
+        target = FindTarget(traceDistance);
     }
 
     public override void OnDamage(float damage, Vector3 hitPoint, Vector3 hitNormal)
     {
         base.OnDamage(damage, hitPoint, hitNormal);
+        bloodParticle.transform.position = hitPoint;
+        bloodParticle.transform.forward = hitNormal;
+        bloodParticle.Play();
+        audioSource.PlayOneShot(hitClip);
     }
 
     protected override void Die()
     {
         base.Die();
         CurrentStatus = Status.Die;
+        collider.enabled = false;
+        audioSource.PlayOneShot(dieClip);
+    }
+
+    public LayerMask targetLayer;
+
+    protected Transform FindTarget(float radius)
+    {
+        var colliders = Physics.OverlapSphere(transform.position, radius , targetLayer.value);
+        if(colliders.Length == 0)
+        {
+            return null;
+        }
+        var target = colliders.OrderBy(x => Vector3.Distance(x.transform.position, transform.position)).First();
+        
+        return target.transform; 
     }
 }

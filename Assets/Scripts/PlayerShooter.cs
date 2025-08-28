@@ -17,6 +17,7 @@ public class PlayerShooter : MonoBehaviour
     public Transform leftHandMount;
     public Transform rightHandMount;
     public Transform gunPivot;
+    public GameManager gm;
 
     private void Awake()
     {
@@ -38,6 +39,10 @@ public class PlayerShooter : MonoBehaviour
         gun.transform.localPosition = gunInitPosition;
         gun.transform.localRotation = gunInitRotation;
     }
+    public void GetCoin()
+    {
+        gm.AddScore(20);
+    }
 
     private void OnDisable()
     {
@@ -47,13 +52,13 @@ public class PlayerShooter : MonoBehaviour
 
     private void Update()
     {
-        if(input.Fire)
+        if (input.Fire)
         {
             gun.Fire();
         }
-        else if(input.Reload)
+        if (input.Reload)
         {
-            if(gun.Reload())
+            if (gun.Reload())
             {
                 animator.SetTrigger(IdReload);
             }
@@ -63,11 +68,11 @@ public class PlayerShooter : MonoBehaviour
     private void OnAnimatorIK(int layerIndex)
     {
         gunPivot.position = animator.GetIKHintPosition(AvatarIKHint.RightElbow);
-        animator.SetIKPositionWeight(AvatarIKGoal.LeftHand , 1f);
-        animator.SetIKRotationWeight(AvatarIKGoal.LeftHand , 1f);
+        animator.SetIKPositionWeight(AvatarIKGoal.LeftHand, 1f);
+        animator.SetIKRotationWeight(AvatarIKGoal.LeftHand, 1f);
 
-        animator.SetIKPosition(AvatarIKGoal.LeftHand , leftHandMount.position);
-        animator.SetIKRotation(AvatarIKGoal.LeftHand , leftHandMount.rotation);
+        animator.SetIKPosition(AvatarIKGoal.LeftHand, leftHandMount.position);
+        animator.SetIKRotation(AvatarIKGoal.LeftHand, leftHandMount.rotation);
 
         animator.SetIKPositionWeight(AvatarIKGoal.RightHand, 1f);
         animator.SetIKRotationWeight(AvatarIKGoal.RightHand, 1f);
